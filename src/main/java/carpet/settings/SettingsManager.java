@@ -46,7 +46,6 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static carpet.utils.Translations.tr;
-import static carpet.script.CarpetEventServer.Event.CARPET_RULE_CHANGES;
 import static net.minecraft.command.CommandSource.suggestMatching;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -197,34 +196,6 @@ public class SettingsManager
         observers.forEach(observer -> observer.accept(source, rule, userTypedValue));
         staticObservers.forEach(observer -> observer.accept(source, rule, userTypedValue));
         ServerNetworkHandler.updateRuleWithConnectedClients(rule);
-        switchScarpetRuleIfNeeded(source, rule);
-        if (CARPET_RULE_CHANGES.isNeeded()) CARPET_RULE_CHANGES.onCarpetRuleChanges(rule, source);
-    }
-    
-    private void switchScarpetRuleIfNeeded(ServerCommandSource source, ParsedRule<?> rule)
-    {
-        if (!rule.scarpetApp.isEmpty())
-        {
-            if (rule.getBoolValue() || (rule.type == String.class && !rule.get().equals("false")))
-            {
-                CarpetServer.scriptServer.addScriptHost(source, rule.scarpetApp, s -> canUseCommand(s, rule.get()), false, false, true, null);
-            } else {
-                CarpetServer.scriptServer.removeScriptHost(source, rule.scarpetApp, false, true);
-            }
-        }
-    }
-    
-    /**
-     * Initializes Scarpet rules in this {@link SettingsManager}, if any.<br>
-     * This is handled automatically by Carpet.
-     */
-    public void initializeScarpetRules() {
-        for (ParsedRule<?> rule : rules.values())
-        {
-            if (!rule.scarpetApp.isEmpty()) {
-                switchScarpetRuleIfNeeded(server.getCommandSource(), rule);
-            }
-        }
     }
 
     /**

@@ -45,8 +45,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import static carpet.script.CarpetEventServer.Event.EXPLOSION_OUTCOME;
-
 public class OptimizedExplosion
 {
     private static List<Entity> entitylist;
@@ -74,7 +72,6 @@ public class OptimizedExplosion
         ExplosionAccessor eAccess = (ExplosionAccessor) e;
         
         entityList.clear();
-        boolean eventNeeded = EXPLOSION_OUTCOME.isNeeded() && !eAccess.getWorld().isClient();
         blastCalc(e);
 
         if (!CarpetSettings.explosionNoBlockDamage) {
@@ -160,11 +157,6 @@ public class OptimizedExplosion
                             densityCache.put(pair, density);
                         }
 
-                        // If it is needed, it saves the entity
-                        if (eventNeeded) {
-                            entityList.add(entity);
-                        }
-
                         double d10 = (1.0D - d12) * density;
                         entity.damage(e.getDamageSource(),
                                 (float) ((int) ((d10 * d10 + d10) / 2.0D * 7.0D * (double) f3 + 1.0D)));
@@ -202,11 +194,6 @@ public class OptimizedExplosion
         double posX = eAccess.getX();
         double posY = eAccess.getY();
         double posZ = eAccess.getZ();
-
-        // If it is needed, calls scarpet event
-        if (EXPLOSION_OUTCOME.isNeeded() && !world.isClient()) {
-            EXPLOSION_OUTCOME.onExplosion((ServerWorld) world, eAccess.getEntity(), e::getCausingEntity,  eAccess.getX(), eAccess.getY(), eAccess.getZ(), eAccess.getPower(), eAccess.isCreateFire(), e.getAffectedBlocks(), entityList, eAccess.getDestructionType());
-        }
 
         boolean damagesTerrain = eAccess.getDestructionType() != Explosion.DestructionType.NONE;
 
