@@ -42,13 +42,6 @@
     "CommandFunctionManager_tickMixin",
 
     "ThreadedAnvilChunkStorage_scarpetChunkCreationMixin",
-    "LevelPropagator_resetChunkInterface",
-    "ChunkTicketManager_scarpetChunkCreationMixin",
-    "LightingProvider_scarpetChunkCreationMixin",
-    "ChunkLightProvider_scarpetChunkCreationMixin",
-    "LightStorage_scarpetChunkCreationMixin",
-    "BlockLightStorage_scarpetChunkCreationMixin",
-    "SkyLightStorage_scarpetChunkCreationMixin",
 
     "ChunkTicketManager_spawnChunksMixin",
     "ServerWorld_spawnChunksMixin",
