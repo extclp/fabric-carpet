@@ -1,6 +1,5 @@
 package carpet;
 
-import carpet.script.utils.AppStoreManager;
 import carpet.settings.ParsedRule;
 import carpet.settings.Rule;
 import carpet.settings.SettingsManager;
@@ -45,7 +44,6 @@ public class CarpetSettings
 {
     public static final String carpetVersion = "1.4.54+v211117";
     public static final Logger LOG = LogManager.getLogger("carpet");
-    public static ThreadLocal<Boolean> skipGenerationChecks = ThreadLocal.withInitial(() -> false);
     public static ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
     public static int runPermissionLevel = 2;
     public static boolean doChainStone = false;
@@ -421,72 +419,6 @@ public class CarpetSettings
 
     @Rule(desc = "Enables /draw commands", extra = {"... allows for drawing simple shapes or","other shapes which are sorta difficult to do normally"}, category = COMMAND)
     public static String commandDraw = "ops";
-
-
-    @Rule(
-            desc = "Enables /script command",
-            extra = "An in-game scripting API for Scarpet programming language",
-            category = {COMMAND, SCARPET}
-    )
-    public static String commandScript = "true";
-
-    private static class ModulePermissionLevel extends Validator<String> {
-        @Override public String validate(ServerCommandSource source, ParsedRule<String> currentRule, String newValue, String string) {
-            int permissionLevel = SettingsManager.getCommandLevel(newValue);
-            if (source != null && !source.hasPermissionLevel(permissionLevel))
-                return null;
-            CarpetSettings.runPermissionLevel = permissionLevel;
-            CarpetServer.settingsManager.notifyPlayersCommandsChanged();
-            return newValue;
-        }
-        @Override
-        public String description() { return "When changing the rule, you must at least have the permission level you are trying to give it";}
-    }
-    @Rule(
-            desc = "Enables restrictions for arbitrary code execution with scarpet",
-            extra = {
-                    "Users that don't have this permission level",
-                    "won't be able to load apps or /script run.",
-                    "It is also the permission level apps will",
-                    "have when running commands with run()"
-            },
-            category = {SCARPET},
-            options = {"ops", "0", "1", "2", "3", "4"},
-            validate = {Validator._COMMAND_LEVEL_VALIDATOR.class, ModulePermissionLevel.class}
-    )
-    public static String commandScriptACE = "ops";
-
-    @Rule(
-            desc = "Scarpet script from world files will autoload on server/world start ",
-            extra = "if /script is enabled",
-            category = SCARPET
-    )
-    public static boolean scriptsAutoload = true;
-
-    @Rule(
-            desc = "Enables scripts debugging messages in system log",
-            category = SCARPET
-    )
-    public static boolean scriptsDebugging = false;
-
-    @Rule(
-            desc = "Enables scripts optimization",
-            category = SCARPET
-    )
-    public static boolean scriptsOptimization = true;
-
-    @Rule(
-            desc = "Location of the online repository of scarpet apps",
-            extra = {
-                    "set to 'none' to disable.",
-                    "Point to any github repo with scarpet apps",
-                    "using <user>/<repo>/contents/<path...>"
-            },
-            category = SCARPET,
-            strict = false,
-            validate= AppStoreManager.ScarpetAppStoreValidator.class
-    )
-    public static String scriptsAppStore = "gnembon/scarpet/contents/programs";
 
 
     @Rule(desc = "Enables /player command to control/spawn players", category = COMMAND)

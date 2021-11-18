@@ -6,7 +6,6 @@
   "mixins": [
     "BarrierBlock_updateSuppressionBlockMixin",
 
-    "SpawnHelperInnerMixin",
     "SpawnGroup_spawnMixin",
     "CommandManagerMixin",
 
@@ -43,27 +42,14 @@
     "CommandFunctionManager_tickMixin",
 
     "ThreadedAnvilChunkStorage_scarpetChunkCreationMixin",
-    "SimpleEntityLookup_scarpetMixin",
-    "ChunkHolder_scarpetChunkCreationMixin",
-    "ServerLightingProvider_scarpetMixin",
-    "LevelPropagator_resetChunkInterface",
-    "ChunkTicketManager_scarpetChunkCreationMixin",
-    "LightingProvider_scarpetChunkCreationMixin",
-    "ChunkLightProvider_scarpetChunkCreationMixin",
-    "LightStorage_scarpetChunkCreationMixin",
-    "BlockLightStorage_scarpetChunkCreationMixin",
-    "SkyLightStorage_scarpetChunkCreationMixin",
-
     "ChunkTicketManager_spawnChunksMixin",
     "ServerWorld_spawnChunksMixin",
-    "ServerLightingProvider_scarpetChunkCreationMixin",
 
     "ChunkTicketManager_spawnChunksMixin",
     "ServerWorld_spawnChunksMixin",
 
     "LivingEntityMixin",
 
-    "MobEntityMixin",
     "EntityTrackerEntry_leashFixMixin",
 
     "VillagerEntity_aiMixin",
@@ -77,8 +63,6 @@
     "ServerPlayNetworkHandler_coreMixin",
 
     "ServerPlayNetworkHandler_tickMixin",
-    "MinecraftServer_scarpetMixin",
-    "PlayerListHeaderS2CPacketMixin",
     "ExperienceOrbEntityMixin",
     "PlayerActionC2SPacketMixin",
     "ServerPlayerEntityMixin",
@@ -98,19 +82,11 @@
     "FluidBlock_renewableBlackstoneMixin",
     "FluidBlock_renewableDeepslateMixin",
     "LavaFluid_renewableDeepslateMixin",
-    "StructureFeatureMixin",
-    "World_scarpetPlopMixin",
-    "ChunkRegion_scarpetPlopMixin",
-    "StructurePiece_scarpetPlopMixin",
-    "PlacedFeature_scarpetMixin",
 
-    "ServerPlayNetworkHandler_scarpetEventsMixin",
-    "ServerPlayerInteractionManager_scarpetEventsMixin",
     "PlayerEntity_parrotMixin",
     "SaplingBlockMixin",
     "EntityMixin",
     "FlatChunkGeneratorMixin",
-    "ChunkGenerator_scarpetMixin",
 
     "GuardianEntityMixin",
     "DesertPyramidFeatureMixin",
@@ -144,7 +120,6 @@
     "TntBlockMixin",
     "ExplosionMixin",
     "ExplosionAccessor",
-    "Explosion_scarpetEventMixin",
 
     "TntEntityMixin",
     "ProjectileEntityMixin",
@@ -175,34 +150,10 @@
     "Projectile_extremeMixin",
     "WitherEntity_extremeMixin",
 
-    "ArmorStandEntity_scarpetMarkerMixin",
-    "Entity_scarpetEventsMixin",
-    "LivingEntity_scarpetEventsMixin",
-    "PlayerEntity_scarpetEventsMixin",
-    "ServerPlayerEntity_scarpetEventMixin",
-    "FallingBlockEntity_scarpetEventsMixin",
-    "BlockItem_scarpetEventMixin",
-    "PlayerManager_scarpetEventsMixin",
-    "PlayerInventory_scarpetEventMixin",
-    "ScoreboardObjective_scarpetMixin",
-    "Scoreboard_scarpetMixin",
-    "Team_scarpetMixin",
-    "TradeOutputSlot_scarpetEventMixin",
-
-    "BiomeEffects_scarpetMixin",
-    "ChunkTicketManager_scarpetMixin",
-    "PointOfInterest_scarpetMixin",
-    "ServerWorld_scarpetMixin",
-    "ServerEntityManager_scarpetMixin",
     "ReloadCommand_reloadAppsMixin",
-    "CrashReport_addScarpetAppsMixin",
 
     "RecipeManager_scarpetMixin",
     "Ingredient_scarpetMixin",
-    "BlockStateArgument_scarpetMixin",
-    "StatePredicate_scarpetMixin",
-    "TagPredicate_scarpetMixin",
-    "HorseBaseEntity_scarpetMixin",
 
     "BlockEntity_movableBEMixin",
     "PistonBlock_movableTEMixin",
@@ -238,8 +189,6 @@
     "WorldRenderer_fogOffMixin",
     "WorldRenderer_creativeNoClipMixin",
     "ClientPlayNetworkHandlerMixin",
-    "DebugRenderer_scarpetRenderMixin",
-    "WorldRenderer_scarpetRenderMixin",
 
     "SoundEngineInt_cleanLogsMixin",
     "SoundSystem_cleanLogsMixin"
