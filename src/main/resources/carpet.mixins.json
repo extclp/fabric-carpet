@@ -64,7 +64,6 @@
 
     "ServerPlayNetworkHandler_tickMixin",
     "ExperienceOrbEntityMixin",
-    "PlayerActionC2SPacketMixin",
     "ServerPlayerEntityMixin",
     "PlayerManager_coreMixin",
     "PlayerManager_fakePlayersMixin",
