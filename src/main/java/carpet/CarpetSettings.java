@@ -125,6 +125,27 @@ public class CarpetSettings
     public static String commandDistance = "true";
     */
 
+    private static class CarpetPermissionLevel extends Validator<String> {
+        @Override public String validate(ServerCommandSource source, ParsedRule<String> currentRule, String newValue, String string) {
+            if (source.hasPermissionLevel(4))
+                return newValue;
+            return null;
+        }
+
+        @Override
+        public String description()
+        {
+            return "This setting can only be set by admins with op level 4";
+        }
+    }
+    @Rule(
+            desc = "Carpet command permission level. Can only be set via .conf file",
+            category = CREATIVE,
+            validate = CarpetPermissionLevel.class,
+            options = {"ops", "2", "4"}
+    )
+    public static String carpetCommandPermissionLevel = "ops";
+
 
 
     @Rule(desc = "Gbhs sgnf sadsgras fhskdpri!!!", category = EXPERIMENTAL)
@@ -181,10 +202,6 @@ public class CarpetSettings
 
     @Rule( desc = "Players absorb XP instantly, without delay", category = CREATIVE )
     public static boolean xpNoCooldown = false;
-
-
-    @Rule( desc = "XP orbs combine with other into bigger orbs", category = FEATURE )
-    public static boolean combineXPOrbs = false;
 
     @Rule(
             desc = "Empty shulker boxes can stack to 64 when dropped on the ground",

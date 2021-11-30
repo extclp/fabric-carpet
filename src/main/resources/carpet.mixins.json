@@ -57,13 +57,13 @@
     "Memory_scarpetMixin",
 
     "PlayerEntity_fakePlayersMixin",
-    "ServerWorld_fakePlayersMixin",
     "ThrownEnderpearlEntity_fakePlayersMixin",
 
     "ServerPlayNetworkHandler_coreMixin",
 
     "ServerPlayNetworkHandler_tickMixin",
     "ExperienceOrbEntityMixin",
+    "PlayerEntity_xpNoCooldownMixin",
     "ServerPlayerEntityMixin",
     "PlayerManager_coreMixin",
     "PlayerManager_fakePlayersMixin",
