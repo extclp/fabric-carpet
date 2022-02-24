@@ -29,11 +29,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.command.PerfCommand;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.commands.PerfCommand;
+import net.minecraft.server.level.ServerPlayer;
 
 public class CarpetServer // static for now - easier to handle all around the code, its one anyways
 {
@@ -42,7 +42,7 @@ public class CarpetServer // static for now - easier to handle all around the co
 
     public static final Random rand = new Random();
     public static MinecraftServer minecraft_server;
-    private static CommandDispatcher<ServerCommandSource> currentCommandDispatcher;
+    private static CommandDispatcher<CommandSourceStack> currentCommandDispatcher;
     public static SettingsManager settingsManager;
     public static final List<CarpetExtension> extensions = new ArrayList<>();
 
@@ -62,6 +62,8 @@ public class CarpetServer // static for now - easier to handle all around the co
         if (currentCommandDispatcher != null)
         {
             extension.registerCommands(currentCommandDispatcher);
+            CarpetSettings.LOG.warn(extension.getClass().getSimpleName() + " extension registered too late!");
+            CarpetSettings.LOG.warn("This won't be supported in later Carpet versions and may crash the game!");
         }
     }
 
@@ -99,7 +101,6 @@ public class CarpetServer // static for now - easier to handle all around the co
     {
         TickSpeed.tick();
         HUDController.update_hud(server, null);
-
         //in case something happens
         CarpetSettings.impendingFillSkipUpdates.set(false);
 
@@ -107,10 +108,10 @@ public class CarpetServer // static for now - easier to handle all around the co
     }
 
     @Deprecated
-    public static void registerCarpetCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void registerCarpetCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
     }
 
-    public static void registerCarpetCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandManager.RegistrationEnvironment environment)
+    public static void registerCarpetCommands(CommandDispatcher<CommandSourceStack> dispatcher, Commands.CommandSelection environment)
     {
         settingsManager.registerCommand(dispatcher);
         extensions.forEach(e -> {
@@ -134,7 +135,7 @@ public class CarpetServer // static for now - easier to handle all around the co
         extensions.forEach(e -> e.registerCommands(dispatcher));
         currentCommandDispatcher = dispatcher;
 
-        if (environment != CommandManager.RegistrationEnvironment.DEDICATED)
+        if (environment != Commands.CommandSelection.DEDICATED)
             PerfCommand.register(dispatcher);
         
         if (FabricLoader.getInstance().isDevelopmentEnvironment())
@@ -142,7 +143,7 @@ public class CarpetServer // static for now - easier to handle all around the co
         // todo 1.16 - re-registerer apps if that's a reload operation.
     }
 
-    public static void onPlayerLoggedIn(ServerPlayerEntity player)
+    public static void onPlayerLoggedIn(ServerPlayer player)
     {
         ServerNetworkHandler.onPlayerJoin(player);
         LoggerRegistry.playerConnected(player);
@@ -150,16 +151,13 @@ public class CarpetServer // static for now - easier to handle all around the co
 
     }
 
-    public static void onPlayerLoggedOut(ServerPlayerEntity player)
+    public static void onPlayerLoggedOut(ServerPlayer player)
     {
         ServerNetworkHandler.onPlayerLoggedOut(player);
         LoggerRegistry.playerDisconnected(player);
         extensions.forEach(e -> e.onPlayerLoggedOut(player));
     }
 
-    public static void clientPreClosing()
-    {
-    }
 
     public static void onServerClosed(MinecraftServer server)
     {
