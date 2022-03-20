@@ -3,7 +3,6 @@ package carpet.network;
 import carpet.CarpetServer;
 import carpet.CarpetSettings;
 import carpet.helpers.TickSpeed;
-import carpet.script.utils.SnoopyCommandSource;
 import carpet.settings.ParsedRule;
 import carpet.settings.SettingsManager;
 import io.netty.buffer.Unpooled;
@@ -30,9 +29,6 @@ public class ServerNetworkHandler
     private static Set<ServerPlayer> validCarpetPlayers = new HashSet<>();
 
     private static Map<String, BiConsumer<ServerPlayer, Tag>> dataHandlers = new HashMap<String, BiConsumer<ServerPlayer, Tag>>(){{
-        put("clientCommand", (p, t) -> {
-            handleClientCommand(p, (CompoundTag)t);
-        });
     }};
 
     public static void handleData(FriendlyByteBuf data, ServerPlayer player)
@@ -85,38 +81,6 @@ public class ServerNetworkHandler
         });
         playerEntity.connection.send(new ClientboundCustomPayloadPacket(CarpetClient.CARPET_CHANNEL, data.build() ));
     }
-
-    private static void handleClientCommand(ServerPlayer player, CompoundTag commandData)
-    {
-        String command = commandData.getString("command");
-        String id = commandData.getString("id");
-        List<Component> output = new ArrayList<>();
-        Component[] error = {null};
-        int resultCode = -1;
-        if (player.getServer() == null)
-        {
-            error[0] = new TextComponent("No Server");
-        }
-        else
-        {
-            resultCode = player.getServer().getCommands().performCommand(
-                    new SnoopyCommandSource(player, error, output), command
-            );
-        }
-        CompoundTag result = new CompoundTag();
-        result.putString("id", id);
-        result.putInt("code", resultCode);
-        if (error[0] != null) result.putString("error", error[0].getContents());
-        ListTag outputResult = new ListTag();
-        for (Component line: output) outputResult.add(StringTag.valueOf(Component.Serializer.toJson(line)));
-        if (!output.isEmpty()) result.put("output", outputResult);
-        player.connection.send(new ClientboundCustomPayloadPacket(
-                CarpetClient.CARPET_CHANNEL,
-                DataBuilder.create().withCustomNbt("clientCommand", result).build()
-        ));
-        // run command plug to command output,
-    }
-
 
     private static void onClientData(ServerPlayer player, FriendlyByteBuf data)
     {
