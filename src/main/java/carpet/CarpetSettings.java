@@ -593,15 +593,6 @@ public class CarpetSettings
     */
 
     @Rule(
-            desc = "Sets a different motd message on client trying to connect to the server",
-            extra = "use '_' to use the startup setting from server.properties",
-            options = "_",
-            strict = false,
-            category = CREATIVE
-    )
-    public static String customMOTD = "_";
-
-    @Rule(
             desc = "Cactus in dispensers rotates blocks.",
             extra = "Rotates block anti-clockwise if possible",
             category = {FEATURE, DISPENSER}
