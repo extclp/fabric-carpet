@@ -500,19 +500,6 @@ public class CarpetSettings
     @Rule(desc = "Disables breaking of blocks caused by flowing liquids", category = CREATIVE)
     public static boolean liquidDamageDisabled = false;
 
-    @Rule(
-            desc = "smooth client animations with low tps settings",
-            extra = "works only in SP, and will slow down players",
-            category = {CREATIVE, SURVIVAL, CLIENT}
-    )
-    public static boolean smoothClientAnimations;
-
-    //@Rule(
-    //        desc="Fixes mining ghost blocks by trusting clients with block breaking",
-    //        extra="Increases player allowed mining distance to 32 blocks",
-    //        category = SURVIVAL
-    //)
-    //public static boolean miningGhostBlockFix = false;
 
     private static class PushLimitLimits extends Validator<Integer> {
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
@@ -836,13 +823,6 @@ public class CarpetSettings
     public static boolean extremeBehaviours = false;
 
     @Rule(
-            desc = "Removes fog from client in the nether and the end",
-            extra = "Improves visibility, but looks weird",
-            category = CLIENT
-    )
-    public static boolean fogOff = false;
-
-    @Rule(
             desc = "Creative No Clip",
             extra = {
                     "On servers it needs to be set on both ",
@@ -950,15 +930,6 @@ public class CarpetSettings
     )
     public static String structureBlockIgnored = "minecraft:structure_void";
 
-    @Rule(
-            desc = "Customizable Structure Block outline render distance",
-            extra = "Required on client to work properly",
-            options = {"96", "192", "2048"},
-            category = {CREATIVE, CLIENT},
-            strict = false,
-            validate = Validator.NONNEGATIVE_NUMBER.class
-    )
-    public static int structureBlockOutlineDistance = 96;
 
     @Rule(
             desc = "Lightning kills the items that drop when lightning kills an entity",

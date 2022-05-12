@@ -138,20 +138,6 @@
     "ServerPlayer_updateSuppressionCrashFixMixin",
     "ChunkMap_creativePlayersLoadChunksMixin"
   ],
-  "client": [
-    "Timer_tickSpeedMixin",
-    "MinecraftMixin",
-    "Minecraft_pausedShakeMixin",
-    "LevelRenderer_pausedShakeMixin",
-    "Gui_tablistMixin",
-    "PlayerTabOverlayMixin",
-    "PistonHeadRenderer_movableBEMixin",
-    "StructureBlockRenderer_mixin",
-    "LocalPlayer_clientCommandMixin",
-    "LevelRenderer_fogOffMixin",
-    "LevelRenderer_creativeNoClipMixin",
-    "ClientPacketListener_customPacketsMixin"
-  ],
   "server": [
   ],
   "injectors": {
