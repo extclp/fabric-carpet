@@ -23,7 +23,6 @@
     "StructureTemplate_fillUpdatesMixin",
     "ServerGamePacketListenerImpl_interactionUpdatesMixin",
     "FlowingFluid_liquidDamageDisabledMixin",
-    "MinecraftServer_pingPlayerSampleLimit",
 
     "MinecraftServer_coreMixin",
 
