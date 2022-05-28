@@ -19,14 +19,13 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerPlayer;
 
 public class ServerNetworkHandler
 {
-    private static Map<ServerPlayer, String> remoteCarpetPlayers = new HashMap<>();
-    private static Set<ServerPlayer> validCarpetPlayers = new HashSet<>();
+    private static final Map<ServerPlayer, String> remoteCarpetPlayers = new HashMap<>();
+    private static final Set<ServerPlayer> validCarpetPlayers = new HashSet<>();
 
     private static Map<String, BiConsumer<ServerPlayer, Tag>> dataHandlers = new HashMap<String, BiConsumer<ServerPlayer, Tag>>(){{
     }};

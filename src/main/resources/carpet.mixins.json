@@ -1,8 +1,7 @@
 {
   "required": true,
-  "refmap": "fabric-carpet-refmap.json",
   "package": "carpet.mixins",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_17",
   "mixins": [
     "BarrierBlock_updateSuppressionBlockMixin",
     "MobCategory_spawnMixin",
@@ -105,17 +104,31 @@
     "DispenserBlock_qcMixin",
 
     "PickaxeItem_missingToolsMixin",
-    "DefaultDispenseItemBehavior_extremeBehavioursMixin",
-    "Containers_extremeMixin",
-    "FishingHook_extremeMixin",
-    "SkeletonTrapGoal_extremeMixin",
-    "FireworkRocketEntity_extremeMixin",
-    "Blaze_extremeMixin",
-    "BlazeAttackGoal_extremeMixin",
-    "Mob_extremeMixin",
-    "AbstractArrow_extremeMixin",
-    "Projectile_extremeMixin",
-    "WitherBoss_extremeMixin",
+    "WitherBoss_moreBlueMixin",
+    "ArmorStand_scarpetMarkerMixin",
+    "Entity_scarpetEventsMixin",
+    "LivingEntity_scarpetEventsMixin",
+    "Player_scarpetEventsMixin",
+    "ServerPlayer_scarpetEventMixin",
+    "AbstractMinecart_scarpetEventsMixin",
+    "EndCrystal_scarpetEventsMixin",
+    "FallingBlockEntity_scarpetEventsMixin",
+    "HangingEntity_scarpetEventsMixin",
+    "PrimedTnt_scarpetEventsMixin",
+    "BlockItem_scarpetEventMixin",
+    "PlayerList_scarpetEventsMixin",
+    "Inventory_scarpetEventMixin",
+    "Objective_scarpetMixin",
+    "Scoreboard_scarpetMixin",
+    "PlayerTeam_scarpetMixin",
+    "MerchantResultSlot_scarpetEventMixin",
+    "AbstractContainerMenu_scarpetMixin",
+    "AbstractContainerMenuSubclasses_scarpetMixin",
+    "RecipeBookMenu_scarpetMixin",
+    "DistanceManager_scarpetMixin",
+    "PoiRecord_scarpetMixin",
+    "ServerLevel_scarpetMixin",
+    "PersistentEntitySectionManager_scarpetMixin",
     "ReloadCommand_reloadAppsMixin",
 
     "RecipeManager_scarpetMixin",
@@ -134,10 +147,9 @@
     "ShulkerBoxBlockEntity_creativeNoClipMixin",
     "TheEndGatewayBlockEntity_creativeNoClipMixin",
     "LivingEntity_creativeFlyMixin",
-    "Level_updateSuppressionCrashFixMixin",
-    "MinecraftServer_updateSuppressionCrashFixMixin",
-    "ServerPlayer_updateSuppressionCrashFixMixin",
-    "ChunkMap_creativePlayersLoadChunksMixin"
+    "ChunkMap_creativePlayersLoadChunksMixin",
+    "SculkSensorBlock_rangeMixin",
+    "CollectingNeighborUpdaterAccessor"
   ],
   "client": [
     "Timer_tickSpeedMixin",
@@ -152,8 +164,6 @@
     "LevelRenderer_fogOffMixin",
     "LevelRenderer_creativeNoClipMixin",
     "ClientPacketListener_customPacketsMixin"
-  ],
-  "server": [
   ],
   "injectors": {
     "defaultRequire": 1
