@@ -38,7 +38,6 @@ import static carpet.settings.RuleCategory.OPTIMIZATION;
 import static carpet.settings.RuleCategory.SURVIVAL;
 import static carpet.settings.RuleCategory.TNT;
 import static carpet.settings.RuleCategory.DISPENSER;
-import static carpet.settings.RuleCategory.SCARPET;
 import static carpet.settings.RuleCategory.CLIENT;
 
 @SuppressWarnings("CanBeFinal")
@@ -47,7 +46,6 @@ public class CarpetSettings
     public static final String carpetVersion = "1.4.77+v220523";
     public static final Logger LOG = LoggerFactory.getLogger("carpet");
     public static ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
-    public static int runPermissionLevel = 2;
     public static boolean doChainStone = false;
     public static boolean chainStoneStickToAll = false;
     public static Block structureBlockIgnoredBlock = Blocks.STRUCTURE_VOID;
@@ -503,31 +501,6 @@ public class CarpetSettings
     public static boolean liquidDamageDisabled = false;
 
 
-    private static class PushLimitLimits extends Validator<Integer> {
-        @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
-            return (newValue>0 && newValue <= 1024) ? newValue : null;
-        }
-        @Override
-        public String description() { return "You must choose a value from 1 to 1024";}
-    }
-    @Rule(
-            desc = "Customizable piston push limit",
-            options = {"10", "12", "14", "100"},
-            category = CREATIVE,
-            strict = false,
-            validate = PushLimitLimits.class
-    )
-    public static int pushLimit = 12;
-
-    @Rule(
-            desc = "Customizable powered rail power range",
-            options = {"9", "15", "30"},
-            category = CREATIVE,
-            strict = false,
-            validate = PushLimitLimits.class
-    )
-    public static int railPowerLimit = 9;
-
     private static class FillLimitLimits extends Validator<Integer> {
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
             return (newValue>0 && newValue <= 20000000) ? newValue : null;
@@ -944,14 +917,4 @@ public class CarpetSettings
             category = {CREATIVE, FEATURE}
     )
     public static boolean creativePlayersLoadChunks = true;
-
-    @Rule(
-            desc = "Customizable sculk sensor range",
-            options = {"8", "16", "32"},
-            category = CREATIVE,
-            strict = false,
-            validate = PushLimitLimits.class
-    )
-    public static int sculkSensorRange = 8;
-
 }
