@@ -92,6 +92,7 @@
     "TntBlock_noUpdateMixin",
     "Explosion_optimizedTntMixin",
     "ExplosionAccessor",
+    "Explosion_xpFromBlocksMixin",
     "PrimedTntMixin",
     "AbstractArrowMixin",
     "FallingBlockEntityMixin",
