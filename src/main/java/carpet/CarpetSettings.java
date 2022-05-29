@@ -502,19 +502,6 @@ public class CarpetSettings
     @Rule(desc = "Disables breaking of blocks caused by flowing liquids", category = CREATIVE)
     public static boolean liquidDamageDisabled = false;
 
-    @Rule(
-            desc = "smooth client animations with low tps settings",
-            extra = "works only in SP, and will slow down players",
-            category = {CREATIVE, SURVIVAL, CLIENT}
-    )
-    public static boolean smoothClientAnimations;
-
-    //@Rule(
-    //        desc="Fixes mining ghost blocks by trusting clients with block breaking",
-    //        extra="Increases player allowed mining distance to 32 blocks",
-    //        category = SURVIVAL
-    //)
-    //public static boolean miningGhostBlockFix = false;
 
     private static class PushLimitLimits extends Validator<Integer> {
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
@@ -575,15 +562,6 @@ public class CarpetSettings
             validate = Validator.NONNEGATIVE_NUMBER.class
     )
     public static int maxEntityCollisions = 0;
-
-    @Rule(
-            desc = "Customizable server list ping (Multiplayer menu) playerlist sample limit",
-            options = {"0", "12", "20", "40"},
-            category = CREATIVE,
-            strict = false,
-            validate = Validator.NONNEGATIVE_NUMBER.class
-    )
-    public static int pingPlayerListLimit = 12;
     /*
 
     @Rule(
@@ -593,15 +571,6 @@ public class CarpetSettings
     )
     public static boolean waterFlow = true;
     */
-
-    @Rule(
-            desc = "Sets a different motd message on client trying to connect to the server",
-            extra = "use '_' to use the startup setting from server.properties",
-            options = "_",
-            strict = false,
-            category = CREATIVE
-    )
-    public static String customMOTD = "_";
 
     @Rule(
             desc = "Cactus in dispensers rotates blocks.",
@@ -831,20 +800,6 @@ public class CarpetSettings
             category = {EXPERIMENTAL, CREATIVE}
     )
     public static boolean flatWorldStructureSpawning = false;
-
-    @Rule(
-            desc = "Increases for testing purposes number of blue skulls shot by the wither",
-            category = CREATIVE
-    )
-    public static boolean moreBlueSkulls = false;
-
-    @Rule(
-            desc = "Removes fog from client in the nether and the end",
-            extra = "Improves visibility, but looks weird",
-            category = CLIENT
-    )
-    public static boolean fogOff = false;
-
     @Rule(
             desc = "Creative No Clip",
             extra = {
@@ -953,15 +908,6 @@ public class CarpetSettings
     )
     public static String structureBlockIgnored = "minecraft:structure_void";
 
-    @Rule(
-            desc = "Customizable Structure Block outline render distance",
-            extra = "Required on client to work properly",
-            options = {"96", "192", "2048"},
-            category = {CREATIVE, CLIENT},
-            strict = false,
-            validate = Validator.NONNEGATIVE_NUMBER.class
-    )
-    public static int structureBlockOutlineDistance = 96;
 
     @Rule(
             desc = "Lightning kills the items that drop when lightning kills an entity",
