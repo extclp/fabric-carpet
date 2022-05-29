@@ -497,9 +497,6 @@ public class CarpetSettings
     @Rule(desc = "placing blocks cause block updates", category = CREATIVE)
     public static boolean interactionUpdates = true;
 
-    @Rule(desc = "Disables breaking of blocks caused by flowing liquids", category = CREATIVE)
-    public static boolean liquidDamageDisabled = false;
-
 
     private static class FillLimitLimits extends Validator<Integer> {
         @Override public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
@@ -888,27 +885,6 @@ public class CarpetSettings
             category = BUGFIX
     )
     public static boolean lightningKillsDropsFix = false;
-
-    @Rule(
-            desc = "Placing an activator rail on top of a barrier block will fill the neighbor updater stack when the rail turns off.",
-            extra = {"The integer entered is the amount of updates that should be left in the stack", "-1 turns it off"},
-            category = CREATIVE,
-            options = {"-1","0","10","50"},
-            strict = false,
-            validate = UpdateSuppressionBlockModes.class
-    )
-    public static int updateSuppressionBlock = -1;
-
-    private static class UpdateSuppressionBlockModes extends Validator<Integer> {
-        @Override
-        public Integer validate(CommandSourceStack source, ParsedRule<Integer> currentRule, Integer newValue, String string) {
-            return newValue < -1 ? null : newValue;
-        }
-        @Override
-        public String description() {
-            return "This value represents the amount of updates required before the logger logs them. Must be -1 or larger";
-        }
-    }
 
     @Rule(
             desc = "Creative players load chunks, or they don't! Just like spectators!",
