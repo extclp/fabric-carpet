@@ -44,7 +44,7 @@ import static carpet.settings.RuleCategory.CLIENT;
 @SuppressWarnings("CanBeFinal")
 public class CarpetSettings
 {
-    public static final String carpetVersion = "1.4.77+v220523";
+    public static final String carpetVersion = "1.4.79+v220607";
     public static final Logger LOG = LoggerFactory.getLogger("carpet");
     public static ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
     public static int runPermissionLevel = 2;
@@ -896,7 +896,7 @@ public class CarpetSettings
     public static double creativeFlyDrag = 0.09;
 
     @Rule(
-            desc = "Removes abnoxious messages from the logs",
+            desc = "Removes obnoxious messages from the logs",
             extra = {
                     "Doesn't display 'Maximum sound pool size 247 reached'",
                     "Which is normal with decent farms and contraptions"
