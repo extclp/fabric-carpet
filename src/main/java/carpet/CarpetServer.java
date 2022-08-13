@@ -1,8 +1,9 @@
 package carpet;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
 
 import carpet.commands.CounterCommand;
 import carpet.commands.DistanceCommand;
@@ -20,7 +21,7 @@ import carpet.network.ServerNetworkHandler;
 import carpet.helpers.HopperCounter;
 import carpet.helpers.TickSpeed;
 import carpet.logging.LoggerRegistry;
-import carpet.settings.SettingsManager;
+import carpet.api.settings.SettingsManager;
 import carpet.logging.HUDController;
 import carpet.utils.MobAI;
 import carpet.utils.SpawnReporter;
@@ -36,10 +37,10 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class CarpetServer // static for now - easier to handle all around the code, its one anyways
 {
-    public static final Random rand = new Random();
     public static MinecraftServer minecraft_server;
     private static CommandDispatcher<CommandSourceStack> currentCommandDispatcher;
-    public static SettingsManager settingsManager;
+
+    public static carpet.settings.SettingsManager settingsManager; // to change type to api type, can't change right now because of binary and source compat
     public static final List<CarpetExtension> extensions = new ArrayList<>();
 
     // Separate from onServerLoaded, because a server can be loaded multiple times in singleplayer
@@ -53,7 +54,7 @@ public class CarpetServer // static for now - easier to handle all around the co
     {
         extensions.add(extension);
         // Stop the stupid practice of extensions mixing into Carpet just to register themselves
-        if (StackWalker.getInstance().walk(stream -> stream.anyMatch(el ->
+        if (StackWalker.getInstance().walk(stream -> stream.anyMatch(el -> 
             el.getClassName() == CarpetServer.class.getName() && !el.getMethodName().equals("manageExtension")
         ))) {
             CarpetSettings.LOG.warn("""
@@ -69,11 +70,11 @@ public class CarpetServer // static for now - easier to handle all around the co
         }
     }
 
-    // Gets called by Fabric Loader from a ServerModInitializer and a ClientModInitializer, in both to allow extensions
+    // Gets called by Fabric Loader from a ServerModInitializer and a ClientModInitializer, in both to allow extensions 
     // to register before this call in a ModInitializer (declared in fabric.mod.json)
     public static void onGameStarted()
     {
-        settingsManager = new SettingsManager(CarpetSettings.carpetVersion, "carpet", "Carpet Mod");
+        settingsManager = new carpet.settings.SettingsManager(CarpetSettings.carpetVersion, "carpet", "Carpet Mod");
         settingsManager.parseSettingsClass(CarpetSettings.class);
         extensions.forEach(CarpetExtension::onGameStarted);
     }
@@ -86,7 +87,7 @@ public class CarpetServer // static for now - easier to handle all around the co
 
         settingsManager.attachServer(server);
         extensions.forEach(e -> {
-            SettingsManager sm = e.customSettingsManager();
+        	SettingsManager sm = e.extensionSettingsManager();
             if (sm != null) sm.attachServer(server);
             e.onServerLoaded(server);
         });
@@ -119,7 +120,7 @@ public class CarpetServer // static for now - easier to handle all around the co
         }
         settingsManager.registerCommand(dispatcher, commandBuildContext);
         extensions.forEach(e -> {
-            SettingsManager sm = e.customSettingsManager();
+        	SettingsManager sm = e.extensionSettingsManager();
             if (sm != null) sm.registerCommand(dispatcher, commandBuildContext);
         });
         TickCommand.register(dispatcher, commandBuildContext);
@@ -163,7 +164,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         extensions.forEach(e -> e.onPlayerLoggedOut(player));
     }
 
-
     public static void onServerClosed(MinecraftServer server)
     {
         // this for whatever reason gets called multiple times even when joining on SP
@@ -185,6 +185,10 @@ public class CarpetServer // static for now - easier to handle all around the co
     public static void onServerDoneClosing(MinecraftServer server)
     {
         settingsManager.detachServer();
+        extensions.forEach(e -> {
+        	SettingsManager manager = e.extensionSettingsManager();
+            if (manager != null) manager.detachServer();
+        });
     }
 
     public static void registerExtensionLoggers()
@@ -195,6 +199,15 @@ public class CarpetServer // static for now - easier to handle all around the co
     public static void onReload(MinecraftServer server)
     {
         extensions.forEach(e -> e.onReload(server));
+    }
+    
+    private static final Set<CarpetExtension> warnedOutdatedManagerProviders = new HashSet<>();
+    static void warnOutdatedManager(CarpetExtension ext)
+    {
+        if (!warnedOutdatedManagerProviders.contains(ext))
+            CarpetSettings.LOG.warn("""
+                    %s is providing a SettingsManager from an outdated method in CarpetExtension!
+                    This behaviour will not work in later Carpet versions and the manager won't be registered!""".formatted(ext.getClass().getName()));
     }
 }
 
