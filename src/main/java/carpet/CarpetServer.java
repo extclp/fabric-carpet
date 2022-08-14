@@ -40,7 +40,7 @@ public class CarpetServer // static for now - easier to handle all around the co
     public static MinecraftServer minecraft_server;
     private static CommandDispatcher<CommandSourceStack> currentCommandDispatcher;
 
-    public static carpet.settings.SettingsManager settingsManager; // to change type to api type, can't change right now because of binary and source compat
+    public static SettingsManager settingsManager; // to change type to api type, can't change right now because of binary and source compat
     public static final List<CarpetExtension> extensions = new ArrayList<>();
 
     // Separate from onServerLoaded, because a server can be loaded multiple times in singleplayer
@@ -74,7 +74,7 @@ public class CarpetServer // static for now - easier to handle all around the co
     // to register before this call in a ModInitializer (declared in fabric.mod.json)
     public static void onGameStarted()
     {
-        settingsManager = new carpet.settings.SettingsManager(CarpetSettings.carpetVersion, "carpet", "Carpet Mod");
+        settingsManager = new SettingsManager(CarpetSettings.carpetVersion, "carpet", "Carpet Mod");
         settingsManager.parseSettingsClass(CarpetSettings.class);
         extensions.forEach(CarpetExtension::onGameStarted);
     }

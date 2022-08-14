@@ -173,23 +173,13 @@ public class SettingsManager {
      */
     public void parseSettingsClass(Class<?> settingsClass)
     {
-        boolean warned = settingsClass == CarpetSettings.class; // don't warn for ourselves
 
         nextRule: for (Field field : settingsClass.getDeclaredFields())
         {
             Class<? extends Rule.Condition>[] conditions;
             Rule newAnnotation = field.getAnnotation(Rule.class);
-            carpet.settings.Rule oldAnnotation = field.getAnnotation(carpet.settings.Rule.class);
             if (newAnnotation != null) {
                 conditions = newAnnotation.conditions();
-            } else if (oldAnnotation != null) {
-                conditions = oldAnnotation.condition();
-                if (!warned) {
-                    CarpetSettings.LOG.warn("""
-                        Registering outdated rules for settings class '%s'!
-                        This won't be supported in the future and rules won't be registered!""".formatted(settingsClass.getName()));
-                    warned = true;
-                }
             } else {
                 continue;
             }

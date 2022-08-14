@@ -3,6 +3,7 @@ package carpet.settings;
 import carpet.CarpetSettings;
 import carpet.api.settings.CarpetRule;
 import carpet.api.settings.InvalidRuleValueException;
+import carpet.api.settings.RuleCategory;
 import carpet.api.settings.RuleHelper;
 import carpet.api.settings.SettingsManager;
 import carpet.api.settings.Validators;
@@ -109,7 +110,7 @@ public final class ParsedRule<T> implements CarpetRule<T>, Comparable<ParsedRule
      *             This field may be {@code null} if the settings manager isn't an instance of the old type
      */
     @Deprecated(forRemoval = true) // to remove in favour of realSettingsManager
-    public final carpet.settings.SettingsManager settingsManager;
+    public final SettingsManager settingsManager;
     /**
      * @deprecated No replacement for this. A Carpet rule may not use {@link Validator}
      */
@@ -148,7 +149,7 @@ public final class ParsedRule<T> implements CarpetRule<T>, Comparable<ParsedRule
     @Deprecated(forRemoval = true)
     public static <T> ParsedRule<T> of(Field field, SettingsManager settingsManager) {
         RuleAnnotation rule;
-        if (settingsManager instanceof carpet.settings.SettingsManager && field.isAnnotationPresent(Rule.class)) { // Legacy path
+        if (field.isAnnotationPresent(Rule.class)) { // Legacy path
             Rule a = field.getAnnotation(Rule.class);
             rule = new RuleAnnotation(true, a.name(), a.desc(), a.extra(), a.category(), a.options(), a.strict(), a.appSource(), a.validate());
         } else if (field.isAnnotationPresent(carpet.api.settings.Rule.class)) {
@@ -173,19 +174,13 @@ public final class ParsedRule<T> implements CarpetRule<T>, Comparable<ParsedRule
         this.categories = List.of(rule.category());
         this.scarpetApp = rule.appSource();
         this.realSettingsManager = settingsManager;
-        if (!(settingsManager instanceof carpet.settings.SettingsManager)) {
-            // this is awkward... but people using a custom, new (extends only new api) manager should not be using this anyway but the interface method
-            this.settingsManager = null;
-        } else {
-            this.settingsManager = (carpet.settings.SettingsManager) settingsManager;
-        }
+        this.settingsManager = settingsManager;
         this.realValidators = Stream.of(rule.validators()).map(this::instantiateValidator).collect(Collectors.toList());
         this.defaultValue = value();
         FromStringConverter<T> converter0 = null;
         
         if (categories.contains(RuleCategory.COMMAND))
         {
-            this.realValidators.add(new Validator._COMMAND<T>());
             if (this.type == String.class)
             {
                 this.realValidators.add(instantiateValidator(Validators.CommandLevel.class));
@@ -193,16 +188,7 @@ public final class ParsedRule<T> implements CarpetRule<T>, Comparable<ParsedRule
         }
         
         this.isClient = categories.contains(RuleCategory.CLIENT);
-        if (this.isClient)
-        {
-            this.realValidators.add(new Validator._CLIENT<>());
-        }
-        
-        if (!scarpetApp.isEmpty())
-        {
-            this.realValidators.add(new Validator.ScarpetValidator<>());
-        }
-        
+
         if (rule.options().length > 0)
         {
             this.options = List.of(rule.options());

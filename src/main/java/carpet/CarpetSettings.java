@@ -39,7 +39,6 @@ import static carpet.api.settings.RuleCategory.OPTIMIZATION;
 import static carpet.api.settings.RuleCategory.SURVIVAL;
 import static carpet.api.settings.RuleCategory.TNT;
 import static carpet.api.settings.RuleCategory.DISPENSER;
-import static carpet.api.settings.RuleCategory.SCARPET;
 import static carpet.api.settings.RuleCategory.CLIENT;
 
 @SuppressWarnings({"CanBeFinal", "removal"}) // removal should be removed after migrating rules to the new system
@@ -48,7 +47,6 @@ public class CarpetSettings
     public static final String carpetVersion = "1.4.83+v220727";
     public static final Logger LOG = LoggerFactory.getLogger("carpet");
     public static ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
-    public static int runPermissionLevel = 2;
     public static boolean doChainStone = false;
     public static boolean chainStoneStickToAll = false;
     public static Block structureBlockIgnoredBlock = Blocks.STRUCTURE_VOID;
@@ -74,54 +72,6 @@ public class CarpetSettings
             validate = LanguageValidator.class
     )
     public static String language = "en_us";
-
-    /*
-    These will be turned when events can be added / removed in code
-    Then also gotta remember to remove relevant rules
-
-    @Rule(
-            desc = "Turns on internal camera path tracing app",
-            extra = "Controlled via 'camera' command",
-            category = {COMMAND, SCARPET},
-            appSource = "camera"
-    )
-    public static boolean commandCamera = true;
-
-    @Rule(
-            desc = "Allows to add extra graphical debug information",
-            extra = "Controlled via 'overlay' command",
-            category = {COMMAND, SCARPET},
-            appSource = "overlay"
-    )
-    public static boolean commandOverlay = true;
-
-    @Rule(
-            desc = "Turns on extra information about mobs above and around them",
-            extra = "Controlled via 'ai_tracker' command",
-            category = {COMMAND, SCARPET},
-            appSource = "ai_tracker"
-    )
-    public static boolean commandAITracker = true;
-
-    @Rule(
-        desc = "Enables /draw commands",
-        extra = {
-            "... allows for drawing simple shapes or",
-            "other shapes which are sorta difficult to do normally"
-        },
-        appSource = "draw",
-        category = {FEATURE, SCARPET, COMMAND}
-    )
-    public static String commandDraw = "true";
-
-    @Rule(
-        desc = "Enables /distance command to measure in game distance between points",
-        extra = "Also enables brown carpet placement action if 'carpets' rule is turned on as well",
-        appSource = "distance",
-        category = {FEATURE, SCARPET, COMMAND}
-    )
-    public static String commandDistance = "true";
-    */
 
     private static class CarpetPermissionLevel extends Validator<String> {
         @Override public String validate(CommandSourceStack source, CarpetRule<String> currentRule, String newValue, String string) {
