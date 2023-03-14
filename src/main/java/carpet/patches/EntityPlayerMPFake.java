@@ -2,12 +2,14 @@ package carpet.patches;
 
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
+import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
@@ -23,7 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
-import carpet.fakes.ServerPlayerEntityInterface;
+import net.minecraft.world.level.block.state.BlockState;
+import carpet.fakes.ServerPlayerInterface;
 import carpet.utils.Messenger;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -67,7 +70,7 @@ public class EntityPlayerMPFake extends ServerPlayer
         instance.teleportTo(worldIn, d0, d1, d2, (float)yaw, (float)pitch);
         instance.setHealth(20.0F);
         instance.unsetRemoved();
-        instance.maxUpStep = 0.6F;
+        instance.setMaxUpStep(0.6F);
         instance.gameMode.changeGameModeForPlayer(gamemode);
         server.getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(instance, (byte) (instance.yHeadRot * 256 / 360)), dimensionId);//instance.dimension);
         server.getPlayerList().broadcastAll(new ClientboundTeleportEntityPacket(instance), dimensionId);//instance.dimension);
@@ -90,8 +93,8 @@ public class EntityPlayerMPFake extends ServerPlayer
         playerShadow.setHealth(player.getHealth());
         playerShadow.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
         playerShadow.gameMode.changeGameModeForPlayer(player.gameMode.getGameModeForPlayer());
-        ((ServerPlayerEntityInterface) playerShadow).getActionPack().copyFrom(((ServerPlayerEntityInterface) player).getActionPack());
-        playerShadow.maxUpStep = 0.6F;
+        ((ServerPlayerInterface) playerShadow).getActionPack().copyFrom(((ServerPlayerInterface) player).getActionPack());
+        playerShadow.setMaxUpStep(0.6F);
         playerShadow.entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, player.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION));
 
 
@@ -100,6 +103,11 @@ public class EntityPlayerMPFake extends ServerPlayer
         //player.world.getChunkManager().updatePosition(playerShadow);
         playerShadow.getAbilities().flying = player.getAbilities().flying;
         return playerShadow;
+    }
+
+    public static EntityPlayerMPFake respawnFake(MinecraftServer server, ServerLevel level, GameProfile profile)
+    {
+        return new EntityPlayerMPFake(server, level, profile, false);
     }
 
     private EntityPlayerMPFake(MinecraftServer server, ServerLevel worldIn, GameProfile profile, boolean shadow)
@@ -135,7 +143,6 @@ public class EntityPlayerMPFake extends ServerPlayer
         {
             this.connection.resetPosition();
             this.getLevel().getChunkSource().move(this);
-            hasChangedDimension(); //<- causes hard crash but would need to be done to enable portals // not as of 1.17
         }
         try
         {
@@ -174,5 +181,27 @@ public class EntityPlayerMPFake extends ServerPlayer
     public String getIpAddress()
     {
         return "127.0.0.1";
+    }
+
+    @Override
+    protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
+        doCheckFallDamage(y, onGround);
+    }
+
+    @Override
+    public Entity changeDimension(ServerLevel serverLevel)
+    {
+        super.changeDimension(serverLevel);
+        if (wonGame) {
+            ServerboundClientCommandPacket p = new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN);
+            connection.handleClientCommand(p);
+        }
+
+        // If above branch was taken, *this* has been removed and replaced, the new instance has been set
+        // on 'our' connection (which is now theirs, but we still have a ref).
+        if (connection.player.isChangingDimension()) {
+            connection.player.hasChangedDimension();
+        }
+        return connection.player;
     }
 }

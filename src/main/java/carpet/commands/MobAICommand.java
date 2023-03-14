@@ -24,10 +24,10 @@ public class MobAICommand
                 requires((player) -> CommandHelper.canUseCommand(player, CarpetSettings.commandTrackAI)).
                 then(argument("entity type", resource(commandBuildContext, Registries.ENTITY_TYPE)).
 
-                        suggests( (c, b) -> suggest(MobAI.availbleTypes(), b)).
+                        suggests( (c, b) -> suggest(MobAI.availbleTypes(c.getSource()), b)).
                         then(literal("clear").executes( (c) ->
                                 {
-                                    MobAI.clearTracking(getSummonableEntityType(c, "entity type").value());
+                                    MobAI.clearTracking(c.getSource().getServer(), getSummonableEntityType(c, "entity type").value());
                                     return 1;
                                 }
                         )).

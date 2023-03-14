@@ -1,7 +1,8 @@
-package carpet.helpers;
+package carpet.script.utils;
 
 import java.util.Optional;
 import java.util.function.Predicate;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -84,7 +85,6 @@ public class Tracer
                 }
             }
         }
-        if (target == null) return null;
-        return new EntityHitResult(target, targetHitPos);
+        return target == null ? null : new EntityHitResult(target, targetHitPos);
     }
 }

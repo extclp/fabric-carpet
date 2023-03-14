@@ -8,9 +8,10 @@ import carpet.settings.Rule;
 import carpet.utils.Translations;
 import carpet.utils.Messenger;
 import carpet.utils.SpawnChunks;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerInterface;
@@ -19,15 +20,19 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.piston.PistonStructureResolver;
+import net.minecraft.world.level.border.BorderStatus;
+import net.minecraft.world.level.border.WorldBorder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Optional;
 
 import static carpet.api.settings.RuleCategory.BUGFIX;
@@ -45,17 +50,13 @@ import static carpet.api.settings.RuleCategory.CLIENT;
 @SuppressWarnings({"CanBeFinal", "removal"}) // removal should be removed after migrating rules to the new system
 public class CarpetSettings
 {
-    public static final String carpetVersion = "1.4.91+v221207";
-    public static final String releaseTarget = "1.19.3";
+    public static final String carpetVersion = FabricLoader.getInstance().getModContainer("carpet").orElseThrow().getMetadata().getVersion().toString();
+    public static final String releaseTarget = "1.19.4";
     public static final Logger LOG = LoggerFactory.getLogger("carpet");
     public static final ThreadLocal<Boolean> skipGenerationChecks = ThreadLocal.withInitial(() -> false);
     public static final ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
     public static int runPermissionLevel = 2;
-    public static boolean doChainStone = false;
-    public static boolean chainStoneStickToAll = false;
     public static Block structureBlockIgnoredBlock = Blocks.STRUCTURE_VOID;
-    public static final int vanillaStructureBlockLimit = 48;
-
     private static class LanguageValidator extends Validator<String> {
         @Override public String validate(CommandSourceStack source, CarpetRule<String> currentRule, String newValue, String string) {
             if (!Translations.isValidLanguage(newValue))
@@ -203,7 +204,7 @@ public class CarpetSettings
     @Rule( desc = "Players absorb XP instantly, without delay", category = CREATIVE )
     public static boolean xpNoCooldown = false;
 
-    public static class StackableShulkerBoxValidator extends Validator<String> 
+    public static class StackableShulkerBoxValidator extends Validator<String>
     {
         @Override
         public String validate(CommandSourceStack source, CarpetRule<String> currentRule, String newValue, String string)
@@ -341,8 +342,32 @@ public class CarpetSettings
     )
     public static boolean antiCheatDisabled = false;
 
-    @Rule(desc = "Pistons, droppers and dispensers react if block above them is powered", category = CREATIVE)
-    public static boolean quasiConnectivity = true;
+    private static class QuasiConnectivityValidator extends Validator<Integer> {
+
+        @Override
+        public Integer validate(CommandSourceStack source, CarpetRule<Integer> changingRule, Integer newValue, String userInput) {
+            int minRange = 0;
+            int maxRange = 1;
+
+            if (source == null) {
+                maxRange = Integer.MAX_VALUE;
+            } else {
+                for (Level level : source.getServer().getAllLevels()) {
+                    maxRange = Math.max(maxRange, level.getHeight() - 1);
+                }
+            }
+
+            return (newValue >= minRange && newValue <= maxRange) ? newValue : null;
+        }
+    }
+
+    @Rule(
+            desc = "Pistons, droppers, and dispensers check for power to the block(s) above them.",
+            extra = { "Defines the range at which pistons, droppers, and dispensers check for 'quasi power'." },
+            category = CREATIVE,
+            validate = QuasiConnectivityValidator.class
+    )
+    public static int quasiConnectivity = 1;
 
     @Rule(
             desc = "Players can flip and rotate blocks when holding cactus",
@@ -383,13 +408,10 @@ public class CarpetSettings
     @Rule( desc = "Pistons can push block entities, like hoppers, chests etc.", category = {EXPERIMENTAL, FEATURE} )
     public static boolean movableBlockEntities = false;
 
-
-    private static class ChainStoneSetting extends Validator<String> {
-        @Override public String validate(CommandSourceStack source, CarpetRule<String> currentRule, String newValue, String string) {
-            CarpetSettings.doChainStone = !newValue.toLowerCase(Locale.ROOT).equals("false");
-            CarpetSettings.chainStoneStickToAll = newValue.toLowerCase(Locale.ROOT).equals("stick_to_all");
-
-            return newValue;
+    public enum ChainStoneMode {
+        TRUE, FALSE, STICK_TO_ALL;
+        public boolean enabled() {
+            return this != FALSE;
         }
     }
 
@@ -399,11 +421,9 @@ public class CarpetSettings
                     "and will stick to other blocks that connect to them directly.",
                     "With stick_to_all: it will stick even if not visually connected"
             },
-            category = {EXPERIMENTAL, FEATURE},
-            options = {"true", "false", "stick_to_all"},
-            validate = ChainStoneSetting.class
+            category = {EXPERIMENTAL, FEATURE}
     )
-    public static String chainStone = "false";
+    public static ChainStoneMode chainStone = ChainStoneMode.FALSE;
 
     @Rule( desc = "Saplings turn into dead shrubs in hot climates and no water access", category = FEATURE )
     public static boolean desertShrubs = false;
@@ -508,13 +528,6 @@ public class CarpetSettings
     )
     public static boolean smoothClientAnimations;
 
-    //@Rule(
-    //        desc="Fixes mining ghost blocks by trusting clients with block breaking",
-    //        extra="Increases player allowed mining distance to 32 blocks",
-    //        category = SURVIVAL
-    //)
-    //public static boolean miningGhostBlockFix = false;
-
     private static class PushLimitLimits extends Validator<Integer> {
         @Override public Integer validate(CommandSourceStack source, CarpetRule<Integer> currentRule, Integer newValue, String string) {
             return (newValue>0 && newValue <= 1024) ? newValue : null;
@@ -529,7 +542,7 @@ public class CarpetSettings
             strict = false,
             validate = PushLimitLimits.class
     )
-    public static int pushLimit = 12;
+    public static int pushLimit = PistonStructureResolver.MAX_PUSH_DEPTH;
 
     @Rule(
             desc = "Customizable powered rail power range",
@@ -540,29 +553,60 @@ public class CarpetSettings
     )
     public static int railPowerLimit = 9;
 
-    private static class FillLimitLimits extends Validator<Integer> {
-        @Override public Integer validate(CommandSourceStack source, CarpetRule<Integer> currentRule, Integer newValue, String string) {
-            return (newValue>0 && newValue <= 20000000) ? newValue : null;
+    private static class FillLimitMigrator extends Validator<Integer>
+    {
+        @Override
+        public Integer validate(CommandSourceStack source, CarpetRule<Integer> changingRule, Integer newValue, String userInput)
+        {
+            if (source != null && source.getServer().overworld() != null)
+            {
+                GameRules.IntegerValue gamerule = source.getServer().getGameRules().getRule(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
+                if (gamerule.get() != newValue)
+                {
+                    if (newValue == 32768 && changingRule.value() == newValue) // migration call, gamerule is different, update rule
+                    {
+                        Messenger.m(source, "g Syncing fillLimit rule with gamerule");
+                        newValue = gamerule.get();
+                    } else if (newValue != 32768 && gamerule.get() == 32768)
+                    {
+                        Messenger.m(source, "g Migrated value of fillLimit carpet rule to commandModificationBlockLimit gamerule");
+                        gamerule.set(newValue, source.getServer());
+                    }
+                }
+            }
+            return newValue;
         }
         @Override
-        public String description() { return "You must choose a value from 1 to 20M";}
+        public String description() { return "The value of this rule will be migrated to the gamerule";}
     }
+
     @Rule(
-            desc = "Customizable fill/clone volume limit",
+            desc = "[Deprecated] Customizable fill/fillbiome/clone volume limit",
+            extra = "Use vanilla gamerule instead. This setting will be removed in 1.20.0",
             options = {"32768", "250000", "1000000"},
             category = CREATIVE,
             strict = false,
-            validate = FillLimitLimits.class
+            validate = FillLimitMigrator.class
     )
     public static int fillLimit = 32768;
 
+    private static class ForceloadLimitValidator extends Validator<Integer>
+    {
+        @Override
+        public Integer validate(CommandSourceStack source, CarpetRule<Integer> currentRule, Integer newValue, String string)
+        {
+            return (newValue > 0 && newValue <= 20000000) ? newValue : null;
+        }
 
+        @Override
+        public String description() { return "You must choose a value from 1 to 20M";}
+    }
     @Rule(
             desc = "Customizable forceload chunk limit",
             options = {"256"},
             category = CREATIVE,
             strict = false,
-            validate = FillLimitLimits.class
+            validate = ForceloadLimitValidator.class
     )
     public static int forceloadLimit = 256;
 
@@ -733,14 +777,14 @@ public class CarpetSettings
             options = {"0", "11"},
             validate = ChangeSpawnChunksValidator.class
     )
-    public static int spawnChunksSize = 11;
+    public static int spawnChunksSize = MinecraftServer.START_CHUNK_RADIUS;
 
     public static class LightBatchValidator extends Validator<Integer> {
         public static void applyLightBatchSizes(int maxBatchSize)
         {
             Iterator<ServerLevel> iterator = CarpetServer.minecraft_server.getAllLevels().iterator();
-            
-            while (iterator.hasNext()) 
+
+            while (iterator.hasNext())
             {
                 ServerLevel serverWorld = iterator.next();
                 serverWorld.getChunkSource().getLightEngine().setTaskPerBatch(maxBatchSize);
@@ -759,13 +803,13 @@ public class CarpetSettings
                 return newValue;
             }
             if (CarpetServer.minecraft_server == null) return newValue;
-            
+
             applyLightBatchSizes(newValue); // Apply new settings
-            
+
             return newValue;
         }
     }
-    
+
     @Rule(
             desc = "Changes maximum light tasks batch size",
             extra = {"Allows for a higher light suppression tolerance", "setting it to 5 - Default limit defined by the game"},
@@ -804,21 +848,8 @@ public class CarpetSettings
     @Rule(desc = "fixes block placement rotation issue when player rotates quickly while placing blocks", category = RuleCategory.BUGFIX)
     public static boolean placementRotationFix = false;
 
-    @Rule(
-            desc = "Fixes leads breaking/becoming invisible in unloaded chunks",
-            extra = "You may still get visibly broken leash links on the client side, but server side the link is still there.",
-            category = RuleCategory.BUGFIX
-    )// needs checkfix for 1.15
-    public static boolean leadFix = false;
-
     @Rule(desc = "Spawning requires much less CPU and Memory", category = OPTIMIZATION)
     public static boolean lagFreeSpawning = false;
-    
-    @Rule(
-            desc = "Allows structure mobs to spawn in flat worlds",
-            category = {EXPERIMENTAL, CREATIVE}
-    )
-    public static boolean flatWorldStructureSpawning = false;
 
     @Rule(
             desc = "Increases for testing purposes number of blue skulls shot by the wither",
@@ -896,7 +927,7 @@ public class CarpetSettings
     public static class StructureBlockLimitValidator extends Validator<Integer> {
 
         @Override public Integer validate(CommandSourceStack source, CarpetRule<Integer> currentRule, Integer newValue, String string) {
-            return (newValue >= vanillaStructureBlockLimit) ? newValue : null;
+            return (newValue >= StructureBlockEntity.MAX_SIZE_PER_AXIS) ? newValue : null;
         }
 
         @Override
@@ -917,13 +948,14 @@ public class CarpetSettings
             validate = StructureBlockLimitValidator.class,
             strict = false
     )
-    public static int structureBlockLimit = vanillaStructureBlockLimit;
+    public static int structureBlockLimit = StructureBlockEntity.MAX_SIZE_PER_AXIS;
 
     public static class StructureBlockIgnoredValidator extends Validator<String> {
 
         @Override
         public String validate(CommandSourceStack source, CarpetRule<String> currentRule, String newValue, String string) {
-            Optional<Block> ignoredBlock = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(newValue));
+            if (source == null) return newValue; // closing or sync
+            Optional<Block> ignoredBlock = source.registryAccess().registryOrThrow(Registries.BLOCK).getOptional(ResourceLocation.tryParse(newValue));
             if (!ignoredBlock.isPresent()) {
                 Messenger.m(source, "r Unknown block '" + newValue + "'.");
                 return null;
@@ -996,4 +1028,57 @@ public class CarpetSettings
     )
     public static int sculkSensorRange = 8;
 
+    /**
+     * Listener, we need to update world borders to change whether
+     * they are currently moving in real time or in game time.
+     */
+    private static class WorldBorderValidator extends Validator<Boolean>
+    {
+        @Override
+        public Boolean validate(CommandSourceStack source, CarpetRule<Boolean> changingRule, Boolean newValue, String userInput)
+        {
+            if (changingRule.value() ^ newValue)
+            {
+                // Needed for the update
+                tickSyncedWorldBorders = newValue;
+                MinecraftServer server = CarpetServer.minecraft_server;
+                if (server == null)
+                {
+                    return newValue;
+                }
+                for (ServerLevel level : server.getAllLevels())
+                {
+                    WorldBorder worldBorder = level.getWorldBorder();
+                    if (worldBorder.getStatus() != BorderStatus.STATIONARY)
+                    {
+                        double from = worldBorder.getSize();
+                        double to = worldBorder.getLerpTarget();
+                        long time = worldBorder.getLerpRemainingTime();
+                        worldBorder.lerpSizeBetween(from, to, time);
+                    }
+                }
+            }
+            return newValue;
+        }
+    }
+
+    @Rule(
+            desc = "Makes world borders move based on in game time instead of real time",
+            extra = "This has the effect that when the tick rate changes the world border speed also changes proportional to it",
+            category = FEATURE,
+            validate = WorldBorderValidator.class
+    )
+    public static boolean tickSyncedWorldBorders = false;
+
+    public enum FungusFixMode {
+        FALSE, RANDOM, ALL;
+    }
+
+    // refers to "[MC-215169](https://bugs.mojang.com/browse/MC-215169)." - unconfirmed yet that its a java bug
+    @Rule(
+            desc = "Allows to grow nether fungi with 3x3 base with bonemeal",
+            extra = {"Setting to 'all' will make all nether fungi grow into 3x3 trees", "Setting to 'random' will make 6% of all nether fungi grow into 3x3 trees", "(this being consistent with worldgen)"},
+            category = {SURVIVAL, FEATURE}
+    )
+    public static FungusFixMode thickFungusGrowth = FungusFixMode.FALSE;
 }

@@ -241,7 +241,7 @@ public class OptimizedExplosion
                                 .withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity)
                                 .withOptionalParameter(LootContextParams.THIS_ENTITY, eAccess.getSource());
 
-                        if (eAccess.getBlockInteraction() == Explosion.BlockInteraction.DESTROY)
+                        if (eAccess.getBlockInteraction() == Explosion.BlockInteraction.DESTROY_WITH_DECAY)
                             lootBuilder.withParameter(LootContextParams.EXPLOSION_RADIUS, eAccess.getRadius());
 
                         state.spawnAfterBreak(serverLevel, blockpos, ItemStack.EMPTY, dropFromExplosions);
@@ -329,7 +329,7 @@ public class OptimizedExplosion
                         double d8 = eAccess.getZ();
 
                         for (float f1 = 0.3F; f > 0.0F; f -= 0.22500001F) {
-                            BlockPos blockpos = new BlockPos(d4, d6, d8);
+                            BlockPos blockpos = BlockPos.containing(d4, d6, d8);
                             BlockState state = eAccess.getLevel().getBlockState(blockpos);
                             FluidState fluidState = eAccess.getLevel().getFluidState(blockpos);
 
@@ -521,7 +521,7 @@ public class OptimizedExplosion
                         boolean found = false;
 
                         for (float f1 = 0.3F; f > 0.0F; f -= 0.22500001F) {
-                            BlockPos blockpos = new BlockPos(d4, d6, d8);
+                            BlockPos blockpos = BlockPos.containing(d4, d6, d8);
                             BlockState state = eAccess.getLevel().getBlockState(blockpos);
                             FluidState fluidState = eAccess.getLevel().getFluidState(blockpos);
 

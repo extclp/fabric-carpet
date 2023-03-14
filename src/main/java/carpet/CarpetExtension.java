@@ -127,8 +127,6 @@ public interface CarpetExtension
     default void onReload(MinecraftServer server) {}
 
     /**
-     * Event that gets called when a player logs in
-     * 
      * @return A {@link String} usually being the extension's id
      * 
      */
@@ -145,7 +143,7 @@ public interface CarpetExtension
      * rules.
      * 
      * @param lang A {@link String} being the language id selected by the user
-     * @return A {@link Map<String, String>} containing the string key with it's 
+     * @return A {@link Map<String, String>} containing the string key with its 
      *         respective translation {@link String} or an empty map if not available
      * 
      */

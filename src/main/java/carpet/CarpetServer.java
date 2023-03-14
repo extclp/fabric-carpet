@@ -21,6 +21,8 @@ import carpet.network.ServerNetworkHandler;
 import carpet.helpers.HopperCounter;
 import carpet.helpers.TickSpeed;
 import carpet.logging.LoggerRegistry;
+import carpet.api.settings.CarpetRule;
+import carpet.api.settings.InvalidRuleValueException;
 import carpet.api.settings.SettingsManager;
 import carpet.logging.HUDController;
 import carpet.utils.MobAI;
@@ -31,6 +33,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.PerfCommand;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,12 +41,9 @@ import net.minecraft.server.level.ServerPlayer;
 public class CarpetServer // static for now - easier to handle all around the code, its one anyways
 {
     public static MinecraftServer minecraft_server;
-    private static CommandDispatcher<CommandSourceStack> currentCommandDispatcher;
-
     public static carpet.settings.SettingsManager settingsManager; // to change type to api type, can't change right now because of binary and source compat
     public static final List<CarpetExtension> extensions = new ArrayList<>();
 
-    // Separate from onServerLoaded, because a server can be loaded multiple times in singleplayer
     /**
      * Registers a {@link CarpetExtension} to be managed by Carpet.<br>
      * Should be called before Carpet's startup, like in Fabric Loader's
@@ -54,22 +54,16 @@ public class CarpetServer // static for now - easier to handle all around the co
     {
         extensions.add(extension);
         // Stop the stupid practice of extensions mixing into Carpet just to register themselves
-        if (StackWalker.getInstance().walk(stream -> stream.anyMatch(el -> 
-            el.getClassName() == CarpetServer.class.getName() && !el.getMethodName().equals("manageExtension")
-        ))) {
+        if (StackWalker.getInstance().walk(stream -> stream.skip(1)
+                .anyMatch(el -> el.getClassName() == CarpetServer.class.getName())))
+        {
             CarpetSettings.LOG.warn("""
                     Extension '%s' is registering itself using a mixin into Carpet instead of a regular ModInitializer!
                     This is stupid and will crash the game in future versions!""".formatted(extension.getClass().getSimpleName()));
         }
-
-        // for extensions that come late to the party, we used to handle them, but we've been giving them warnings about
-        // it for a while. Cause a crash
-        if (currentCommandDispatcher != null)
-        {
-            throw new IllegalStateException("Extension %s tried to register too late!".formatted(extension.getClass().getSimpleName()));
-        }
     }
 
+    // Separate from onServerLoaded, because a server can be loaded multiple times in singleplayer
     // Gets called by Fabric Loader from a ServerModInitializer and a ClientModInitializer, in both to allow extensions 
     // to register before this call in a ModInitializer (declared in fabric.mod.json)
     public static void onGameStarted()
@@ -100,12 +94,23 @@ public class CarpetServer // static for now - easier to handle all around the co
     {
         HopperCounter.resetAll(minecraftServer, true);
         extensions.forEach(e -> e.onServerLoadedWorlds(minecraftServer));
+        // run fillLimit rule migration now that gamerules are available
+        @SuppressWarnings("unchecked")
+        CarpetRule<Integer> fillLimit = (CarpetRule<Integer>) settingsManager.getCarpetRule("fillLimit");
+        try
+        {
+            fillLimit.set(minecraftServer.createCommandSourceStack(), fillLimit.value());
+        } catch (InvalidRuleValueException e)
+        {
+            throw new AssertionError();
+        }
     }
 
     public static void tick(MinecraftServer server)
     {
         TickSpeed.tick();
         HUDController.update_hud(server, null);
+
         //in case something happens
         CarpetSettings.impendingFillSkipUpdates.set(false);
 
@@ -139,7 +144,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         extensions.forEach(e -> {
             e.registerCommands(dispatcher, commandBuildContext);
         });
-        currentCommandDispatcher = dispatcher;
 
         if (environment != Commands.CommandSelection.DEDICATED)
             PerfCommand.register(dispatcher);
@@ -154,10 +158,14 @@ public class CarpetServer // static for now - easier to handle all around the co
         ServerNetworkHandler.onPlayerJoin(player);
         LoggerRegistry.playerConnected(player);
         extensions.forEach(e -> e.onPlayerLoggedIn(player));
-
     }
 
+    @Deprecated(forRemoval = true)
     public static void onPlayerLoggedOut(ServerPlayer player)
+    {
+        onPlayerLoggedOut(player, Component.translatable("multiplayer.player.left"));
+    }
+    public static void onPlayerLoggedOut(ServerPlayer player, Component reason)
     {
         ServerNetworkHandler.onPlayerLoggedOut(player);
         LoggerRegistry.playerDisconnected(player);
@@ -171,7 +179,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         if (minecraft_server != null)
         {
             ServerNetworkHandler.close();
-            currentCommandDispatcher = null;
 
             LoggerRegistry.stopLoggers();
             HUDController.resetScarpetHUDs();
