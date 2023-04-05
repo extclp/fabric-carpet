@@ -45,8 +45,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import static carpet.script.CarpetEventServer.Event.EXPLOSION_OUTCOME;
-
 public class OptimizedExplosion
 {
     private static List<Entity> entitylist;
@@ -67,14 +65,9 @@ public class OptimizedExplosion
     private static ArrayList<Float> chances = new ArrayList<>();
     private static BlockPos blastChanceLocation;
 
-    // Creating entity list for scarpet event
-    private static List<Entity> entityList = new ArrayList<>();
-
     public static void doExplosionA(Explosion e, ExplosionLogHelper eLogger) {
         ExplosionAccessor eAccess = (ExplosionAccessor) e;
-        
-        entityList.clear();
-        boolean eventNeeded = EXPLOSION_OUTCOME.isNeeded() && !eAccess.getLevel().isClientSide();
+
         blastCalc(e);
 
         if (!CarpetSettings.explosionNoBlockDamage) {
@@ -160,11 +153,6 @@ public class OptimizedExplosion
                             densityCache.put(pair, density);
                         }
 
-                        // If it is needed, it saves the entity
-                        if (eventNeeded) {
-                            entityList.add(entity);
-                        }
-
                         double d10 = (1.0D - d12) * density;
                         entity.hurt(e.getDamageSource(),
                                 (float) ((int) ((d10 * d10 + d10) / 2.0D * 7.0D * (double) f3 + 1.0D)));
@@ -202,11 +190,6 @@ public class OptimizedExplosion
         double posX = eAccess.getX();
         double posY = eAccess.getY();
         double posZ = eAccess.getZ();
-
-        // If it is needed, calls scarpet event
-        if (EXPLOSION_OUTCOME.isNeeded() && !world.isClientSide()) {
-            EXPLOSION_OUTCOME.onExplosion((ServerLevel) world, eAccess.getSource(), e::getSourceMob,  eAccess.getX(), eAccess.getY(), eAccess.getZ(), eAccess.getRadius(), eAccess.isFire(), e.getToBlow(), entityList, eAccess.getBlockInteraction());
-        }
 
         boolean damagesTerrain = eAccess.getBlockInteraction() != Explosion.BlockInteraction.NONE;
 

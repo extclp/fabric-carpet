@@ -28,8 +28,6 @@ public class MinecraftMixin
         if (this.level != null) {
             if (CarpetServer.minecraft_server == null)
                 TickSpeed.tick();
-            if (!TickSpeed.process_entities)
-                CarpetClient.shapes.renewShapes();
         }
     }
 }

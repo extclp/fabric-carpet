@@ -14,7 +14,6 @@ import carpet.commands.MobAICommand;
 import carpet.commands.PerimeterInfoCommand;
 import carpet.commands.PlayerCommand;
 import carpet.commands.ProfileCommand;
-import carpet.commands.ScriptCommand;
 import carpet.commands.SpawnCommand;
 import carpet.commands.TestCommand;
 import carpet.commands.TickCommand;
@@ -22,10 +21,8 @@ import carpet.network.ServerNetworkHandler;
 import carpet.helpers.HopperCounter;
 import carpet.helpers.TickSpeed;
 import carpet.logging.LoggerRegistry;
-import carpet.script.CarpetScriptServer;
 import carpet.api.settings.SettingsManager;
 import carpet.logging.HUDController;
-import carpet.utils.FabricAPIHooks;
 import carpet.utils.MobAI;
 import carpet.utils.SpawnReporter;
 import com.mojang.brigadier.CommandDispatcher;
@@ -42,7 +39,6 @@ public class CarpetServer // static for now - easier to handle all around the co
 {
     public static MinecraftServer minecraft_server;
     private static CommandDispatcher<CommandSourceStack> currentCommandDispatcher;
-    public static CarpetScriptServer scriptServer;
     public static carpet.settings.SettingsManager settingsManager; // to change type to api type, can't change right now because of binary and source compat
     public static final List<CarpetExtension> extensions = new ArrayList<>();
 
@@ -80,8 +76,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         settingsManager = new carpet.settings.SettingsManager(CarpetSettings.carpetVersion, "carpet", "Carpet Mod");
         settingsManager.parseSettingsClass(CarpetSettings.class);
         extensions.forEach(CarpetExtension::onGameStarted);
-        FabricAPIHooks.initialize();
-        CarpetScriptServer.parseFunctionClasses();
     }
 
     public static void onServerLoaded(MinecraftServer server)
@@ -96,7 +90,6 @@ public class CarpetServer // static for now - easier to handle all around the co
             if (sm != null) sm.attachServer(server);
             e.onServerLoaded(server);
         });
-        scriptServer = new CarpetScriptServer(server);
         MobAI.resetTrackers();
         LoggerRegistry.initLoggers();
         //TickSpeed.reset();
@@ -106,14 +99,12 @@ public class CarpetServer // static for now - easier to handle all around the co
     {
         HopperCounter.resetAll(minecraftServer, true);
         extensions.forEach(e -> e.onServerLoadedWorlds(minecraftServer));
-        scriptServer.initializeForWorld();
     }
 
     public static void tick(MinecraftServer server)
     {
         TickSpeed.tick();
         HUDController.update_hud(server, null);
-        if (scriptServer != null) scriptServer.tick();
 
         //in case something happens
         CarpetSettings.impendingFillSkipUpdates.set(false);
@@ -142,7 +133,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         DistanceCommand.register(dispatcher, commandBuildContext);
         PerimeterInfoCommand.register(dispatcher, commandBuildContext);
         DrawCommand.register(dispatcher, commandBuildContext);
-        ScriptCommand.register(dispatcher, commandBuildContext);
         MobAICommand.register(dispatcher, commandBuildContext);
         // registering command of extensions that has registered before either server is created
         // for all other, they will have them registered when they add themselves
@@ -163,7 +153,6 @@ public class CarpetServer // static for now - easier to handle all around the co
     {
         ServerNetworkHandler.onPlayerJoin(player);
         LoggerRegistry.playerConnected(player);
-        scriptServer.onPlayerJoin(player);
         extensions.forEach(e -> e.onPlayerLoggedIn(player));
 
     }
@@ -177,8 +166,6 @@ public class CarpetServer // static for now - easier to handle all around the co
 
     public static void clientPreClosing()
     {
-        if (scriptServer != null) scriptServer.onClose();
-        scriptServer = null;
     }
 
     public static void onServerClosed(MinecraftServer server)
@@ -187,8 +174,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         // so we allow to pass multiple times gating it only on existing server ref
         if (minecraft_server != null)
         {
-            if (scriptServer != null) scriptServer.onClose();
-            scriptServer = null;
             ServerNetworkHandler.close();
             currentCommandDispatcher = null;
 
@@ -217,7 +202,6 @@ public class CarpetServer // static for now - easier to handle all around the co
 
     public static void onReload(MinecraftServer server)
     {
-        scriptServer.reload(server);
         extensions.forEach(e -> e.onReload(server));
     }
     
