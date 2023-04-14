@@ -36,7 +36,6 @@
     "DistanceManager_tickMixin",
     "ServerFunctionManager_tickMixin",
     "ChunkMap_scarpetChunkCreationMixin",
-    "DistanceManager_scarpetChunkCreationMixin",
     "DistanceManager_spawnChunksMixin",
     "ServerLevel_spawnChunksMixin",
     "LivingEntity_cleanLogsMixin",
