@@ -83,14 +83,6 @@ public class ClientNetworkHandler
             TickRateManager tickRateManager = ((LevelInterface)p.clientLevel).tickRateManager();
             tickRateManager.setPlayerActiveTimeout(((NumericTag) t).getAsInt());
         });
-        dataHandlers.put("scShape", (p, t) -> { // deprecated // and unused // should remove for 1.17
-            if (CarpetClient.shapes != null)
-                CarpetClient.shapes.addShape((CompoundTag)t);
-        });
-        dataHandlers.put("scShapes", (p, t) -> {
-            if (CarpetClient.shapes != null)
-                CarpetClient.shapes.addShapes((ListTag) t);
-        });
         dataHandlers.put("clientCommand", (p, t) -> {
             CarpetClient.onClientCommand(t);
         });

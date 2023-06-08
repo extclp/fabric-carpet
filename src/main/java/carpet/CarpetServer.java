@@ -16,19 +16,16 @@ import carpet.commands.PlayerCommand;
 import carpet.commands.ProfileCommand;
 import carpet.fakes.MinecraftServerInterface;
 import carpet.helpers.ServerTickRateManager;
-import carpet.script.ScriptCommand;
 import carpet.commands.SpawnCommand;
 import carpet.commands.TestCommand;
 import carpet.commands.TickCommand;
 import carpet.network.ServerNetworkHandler;
 import carpet.helpers.HopperCounter;
 import carpet.logging.LoggerRegistry;
-import carpet.script.CarpetScriptServer;
 import carpet.api.settings.CarpetRule;
 import carpet.api.settings.InvalidRuleValueException;
 import carpet.api.settings.SettingsManager;
 import carpet.logging.HUDController;
-import carpet.script.external.Carpet;
 import carpet.script.external.Vanilla;
 import carpet.script.utils.ParticleParser;
 import carpet.utils.MobAI;
@@ -47,7 +44,6 @@ import net.minecraft.server.level.ServerPlayer;
 public class CarpetServer // static for now - easier to handle all around the code, its one anyways
 {
     public static MinecraftServer minecraft_server;
-    public static CarpetScriptServer scriptServer;
     public static carpet.settings.SettingsManager settingsManager; // to change type to api type, can't change right now because of binary and source compat
     public static final List<CarpetExtension> extensions = new ArrayList<>();
 
@@ -79,7 +75,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         settingsManager.parseSettingsClass(CarpetSettings.class);
         extensions.forEach(CarpetExtension::onGameStarted);
         //FabricAPIHooks.initialize();
-        CarpetScriptServer.parseFunctionClasses();
     }
 
     public static void onServerLoaded(MinecraftServer server)
@@ -94,8 +89,6 @@ public class CarpetServer // static for now - easier to handle all around the co
             if (sm != null) sm.attachServer(server);
             e.onServerLoaded(server);
         });
-        scriptServer = new CarpetScriptServer(server);
-        Carpet.MinecraftServer_addScriptServer(server, scriptServer);
         MobAI.resetTrackers();
         LoggerRegistry.initLoggers();
         //TickSpeed.reset();
@@ -106,7 +99,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         HopperCounter.resetAll(minecraftServer, true);
         extensions.forEach(e -> e.onServerLoadedWorlds(minecraftServer));
         // initialize scarpet rules after all extensions are loaded
-        settingsManager.initializeScarpetRules();
         // run fillLimit rule migration now that gamerules are available
         @SuppressWarnings("unchecked")
         CarpetRule<Integer> fillLimit = (CarpetRule<Integer>) settingsManager.getCarpetRule("fillLimit");
@@ -117,13 +109,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         {
             throw new AssertionError();
         }
-        extensions.forEach(e -> {
-            if (e.extensionSettingsManager() != null)
-            {
-                e.extensionSettingsManager().initializeScarpetRules();
-            }
-        });
-        scriptServer.initializeForWorld();
     }
 
     public static void tick(MinecraftServer server)
@@ -131,7 +116,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         ServerTickRateManager trm = ((MinecraftServerInterface)server).getTickRateManager();
         trm.tick();
         HUDController.update_hud(server, null);
-        if (scriptServer != null) scriptServer.tick();
 
         //in case something happens
         CarpetSettings.impendingFillSkipUpdates.set(false);
@@ -160,7 +144,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         DistanceCommand.register(dispatcher, commandBuildContext);
         PerimeterInfoCommand.register(dispatcher, commandBuildContext);
         DrawCommand.register(dispatcher, commandBuildContext);
-        ScriptCommand.register(dispatcher, commandBuildContext);
         MobAICommand.register(dispatcher, commandBuildContext);
         // registering command of extensions that has registered before either server is created
         // for all other, they will have them registered when they add themselves
@@ -181,7 +164,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         ServerNetworkHandler.onPlayerJoin(player);
         LoggerRegistry.playerConnected(player);
         extensions.forEach(e -> e.onPlayerLoggedIn(player));
-        scriptServer.onPlayerJoin(player);
     }
 
     @Deprecated(forRemoval = true)
@@ -194,17 +176,10 @@ public class CarpetServer // static for now - easier to handle all around the co
         ServerNetworkHandler.onPlayerLoggedOut(player);
         LoggerRegistry.playerDisconnected(player);
         extensions.forEach(e -> e.onPlayerLoggedOut(player));
-        // first case client, second case server
-        CarpetScriptServer runningScriptServer = (player.getServer() == null) ? scriptServer : Vanilla.MinecraftServer_getScriptServer(player.getServer());
-        if (runningScriptServer != null && !runningScriptServer.stopAll) {
-            runningScriptServer.onPlayerLoggedOut(player, reason);
-        }
     }
 
     public static void clientPreClosing()
     {
-        if (scriptServer != null) scriptServer.onClose();
-        scriptServer = null;
     }
 
     public static void onServerClosed(MinecraftServer server)
@@ -213,13 +188,6 @@ public class CarpetServer // static for now - easier to handle all around the co
         // so we allow to pass multiple times gating it only on existing server ref
         if (minecraft_server != null)
         {
-            if (scriptServer != null) scriptServer.onClose();
-            // this is a mess, will cleanip onlly when global reference is gone
-            if (!Vanilla.MinecraftServer_getScriptServer(server).stopAll) {
-                Vanilla.MinecraftServer_getScriptServer(server).onClose();
-            }
-
-            scriptServer = null;
             ServerNetworkHandler.close();
 
             LoggerRegistry.stopLoggers();
@@ -245,7 +213,6 @@ public class CarpetServer // static for now - easier to handle all around the co
 
     public static void onReload(MinecraftServer server)
     {
-        scriptServer.reload(server);
         extensions.forEach(e -> e.onReload(server));
     }
     

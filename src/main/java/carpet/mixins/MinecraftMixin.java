@@ -30,9 +30,6 @@ public class MinecraftMixin implements MinecraftInterface
     private void onClientTick(CallbackInfo info) {
         if (this.level != null) {
             getTickRateManager().ifPresent(TickRateManager::tick);
-            // hope server doesn't need to tick - should be handled by the server on its own
-            if (!getTickRateManager().map(TickRateManager::runsNormally).orElse(true))
-                CarpetClient.shapes.renewShapes();
         }
     }
 
