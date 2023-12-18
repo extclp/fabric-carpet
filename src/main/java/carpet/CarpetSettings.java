@@ -4,7 +4,6 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.RuleCategory;
 import carpet.api.settings.Validators;
 import carpet.api.settings.Validator;
-import carpet.script.utils.AppStoreManager;
 import carpet.settings.Rule;
 import carpet.utils.Translations;
 import carpet.utils.CommandHelper;
@@ -51,7 +50,6 @@ public class CarpetSettings
     public static final String carpetVersion = FabricLoader.getInstance().getModContainer("carpet").orElseThrow().getMetadata().getVersion().toString();
     public static final String releaseTarget = "1.20.3";
     public static final Logger LOG = LoggerFactory.getLogger("carpet");
-    public static final ThreadLocal<Boolean> skipGenerationChecks = ThreadLocal.withInitial(() -> false);
     public static final ThreadLocal<Boolean> impendingFillSkipUpdates = ThreadLocal.withInitial(() -> false);
     public static int runPermissionLevel = 2;
     public static Block structureBlockIgnoredBlock = Blocks.STRUCTURE_VOID;
@@ -462,105 +460,6 @@ public class CarpetSettings
 
     @Rule(desc = "Enables /draw commands", extra = {"... allows for drawing simple shapes or","other shapes which are sorta difficult to do normally"}, category = COMMAND)
     public static String commandDraw = "ops";
-
-
-    @Rule(
-            desc = "Enables /script command",
-            extra = "An in-game scripting API for Scarpet programming language",
-            category = {COMMAND, SCARPET}
-    )
-    public static String commandScript = "true";
-
-    private static class ModulePermissionLevel extends Validator<String> {
-        @Override public String validate(CommandSourceStack source, CarpetRule<String> currentRule, String newValue, String string) {
-            int permissionLevel = switch (newValue) {
-                    case "false" -> 0;
-                    case "true", "ops" -> 2;
-                    case "0", "1", "2", "3", "4" -> Integer.parseInt(newValue);
-                    default -> throw new IllegalArgumentException(); // already checked by previous validator
-            	};
-            if (source != null && !source.hasPermission(permissionLevel))
-                return null;
-            CarpetSettings.runPermissionLevel = permissionLevel;
-            if (source != null)
-                CommandHelper.notifyPlayersCommandsChanged(source.getServer());
-            return newValue;
-        }
-        @Override
-        public String description() { return "When changing the rule, you must at least have the permission level you are trying to give it";}
-    }
-    @Rule(
-            desc = "Enables restrictions for arbitrary code execution with scarpet",
-            extra = {
-                    "Users that don't have this permission level",
-                    "won't be able to load apps or /script run.",
-                    "It is also the permission level apps will",
-                    "have when running commands with run()"
-            },
-            category = {SCARPET},
-            options = {"ops", "0", "1", "2", "3", "4"},
-            validate = {Validators.CommandLevel.class, ModulePermissionLevel.class}
-    )
-    public static String commandScriptACE = "ops";
-
-    @Rule(
-            desc = "Scarpet script from world files will autoload on server/world start ",
-            extra = "if /script is enabled",
-            category = SCARPET
-    )
-    public static boolean scriptsAutoload = true;
-
-    @Rule(
-            desc = "Enables scripts debugging messages in system log",
-            category = SCARPET
-    )
-    public static boolean scriptsDebugging = false;
-
-    @Rule(
-            desc = "Enables scripts optimization",
-            category = SCARPET
-    )
-    public static boolean scriptsOptimization = true;
-
-    private static class ScarpetAppStore extends Validator<String> {
-        @Override
-        public String validate(CommandSourceStack source, CarpetRule<String> currentRule, String newValue, String stringInput) {
-            if (newValue.equals(currentRule.value())) {
-                // Don't refresh the local repo if it's the same (world change), helps preventing hitting rate limits from github when
-                // getting suggestions. Pending is a way to invalidate the cache when it gets old, and investigating api usage further
-                return newValue;
-            }
-            if (newValue.equals("none")) {
-                AppStoreManager.setScarpetRepoLink(null);
-            } else {
-                if (newValue.endsWith("/"))
-                    newValue = newValue.substring(0, newValue.length() - 1);
-                AppStoreManager.setScarpetRepoLink("https://api.github.com/repos/" + newValue + "/");
-            }
-            if (source != null)
-                CommandHelper.notifyPlayersCommandsChanged(source.getServer());
-            return newValue;
-        }
-
-        @Override
-        public String description() {
-            return "Appstore link should point to a valid github repository";
-        }
-    }
-
-    @Rule(
-            desc = "Location of the online repository of scarpet apps",
-            extra = {
-                    "set to 'none' to disable.",
-                    "Point to any github repo with scarpet apps",
-                    "using <user>/<repo>/contents/<path...>"
-            },
-            category = SCARPET,
-            strict = false,
-            validate = ScarpetAppStore.class
-    )
-    public static String scriptsAppStore = "gnembon/scarpet/contents/programs";
-
 
     @Rule(desc = "Enables /player command to control/spawn players", category = COMMAND)
     public static String commandPlayer = "ops";

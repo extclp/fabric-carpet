@@ -262,7 +262,6 @@ public class SettingsManager {
         observers.forEach(observer -> observer.ruleChanged(source, rule, userInput));
         staticObservers.forEach(observer -> observer.ruleChanged(source, rule, userInput));
         ServerNetworkHandler.updateRuleWithConnectedClients(rule);
-        switchScarpetRuleIfNeeded(source, rule); //TODO move into rule
     }
 
     /**
@@ -287,19 +286,6 @@ public class SettingsManager {
         for (CarpetRule<?> rule : rules.values()) RuleHelper.resetToDefault(rule, null);
         server = null;
     }
-    
-    /**
-     * <p>Initializes Scarpet rules in this {@link SettingsManager}, if any.</p>
-     * <p>This is handled automatically by Carpet and calling it is not supported.</p>
-     */
-    public void initializeScarpetRules() { //TODO try remove
-        for (CarpetRule<?> rule : rules.values())
-        {
-            if (rule instanceof ParsedRule<?> pr && !pr.scarpetApp.isEmpty()) {
-                switchScarpetRuleIfNeeded(server.createCommandSourceStack(), pr);
-            }
-        }
-    }
 
     /**
      * Calling this method is not supported.
@@ -321,19 +307,6 @@ public class SettingsManager {
                         e.notifySource(rule, source);
                     }
                 }
-            }
-        }
-    }
-    
-    private void switchScarpetRuleIfNeeded(CommandSourceStack source, CarpetRule<?> carpetRule) //TODO remove. This should be handled by the rule
-    {
-        if (carpetRule instanceof ParsedRule<?> rule && !rule.scarpetApp.isEmpty() && CarpetServer.scriptServer != null) // null check because we may be in server init
-        {
-            if (RuleHelper.getBooleanValue(rule) || (rule.type() == String.class && !rule.value().equals("false")))
-            {
-                CarpetServer.scriptServer.addScriptHost(source, rule.scarpetApp, s -> CommandHelper.canUseCommand(s, rule.value()), false, false, true, null);
-            } else {
-                CarpetServer.scriptServer.removeScriptHost(source, rule.scarpetApp, false, true);
             }
         }
     }
