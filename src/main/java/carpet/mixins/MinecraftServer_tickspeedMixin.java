@@ -1,6 +1,5 @@
 package carpet.mixins;
 
-import carpet.fakes.MinecraftServerInterface;
 import carpet.utils.CarpetProfiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
@@ -13,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.function.BooleanSupplier;
 
 @Mixin(value = MinecraftServer.class, priority = Integer.MAX_VALUE - 10)
-public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerInterface
+public abstract class MinecraftServer_tickspeedMixin extends ReentrantBlockableEventLoop<TickTask>
 {
     public MinecraftServer_tickspeedMixin(String name)
     {

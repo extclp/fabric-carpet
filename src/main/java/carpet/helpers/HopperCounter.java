@@ -378,14 +378,11 @@ public class HopperCounter
             {
                 for (Ingredient ingredient: r.getIngredients())
                 {
-                    for (Collection<ItemStack> stacks : ((IngredientInterface) (Object) ingredient).getRecipeStacks())
+                    for (ItemStack iStak : ingredient.getItems())
                     {
-                        for (ItemStack iStak : stacks)
-                        {
-                            TextColor cand = fromItem(iStak.getItem(), registryAccess);
-                            if (cand != null)
-                                return cand;
-                        }
+                        TextColor cand = fromItem(iStak.getItem(), registryAccess);
+                        if (cand != null)
+                            return cand;
                     }
                 }
             }
