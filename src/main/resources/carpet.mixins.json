@@ -100,8 +100,6 @@
     "WitherBoss_moreBlueMixin",
     "ReloadCommand_reloadAppsMixin",
 
-    "RecipeManager_scarpetMixin",
-
     "BlockEntity_movableBEMixin",
     "PistonBaseBlock_movableBEMixin",
     "PistonMovingBlockEntity_movableBEMixin",
@@ -123,7 +121,11 @@
     "ChestBlock_customStickyMixin",
     "PistonStructureResolver_customStickyMixin",
 
+    "DefaultRedstoneWireEvaluator_redstoneMixin",
+
     "CustomPacketPayload_networkStuffMixin",
+    "ServerGamePacketListenerimpl_connectionMixin"
+
   ],
   "client": [
     "Minecraft_tickMixin",
@@ -132,6 +134,7 @@
     "PistonHeadRenderer_movableBEMixin",
     "StructureBlockRenderer_mixin",
     "ClientPacketListener_clientCommandMixin",
+    "ClientPacketListener_explosionMixin",
     "LevelRenderer_fogOffMixin",
     "LevelRenderer_creativeNoClipMixin",
     "ClientPacketListener_customPacketsMixin",
