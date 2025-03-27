@@ -36,6 +36,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.PerfCommand;
 import net.minecraft.server.level.ServerPlayer;
 
+import javax.annotation.Nullable;
+
 public class CarpetServer // static for now - easier to handle all around the code, its one anyways
 {
     public static MinecraftServer minecraft_server;
@@ -151,7 +153,7 @@ public class CarpetServer // static for now - easier to handle all around the co
     {
     }
 
-    public static void onServerClosed(MinecraftServer server)
+    public static void onServerClosed(@Nullable MinecraftServer server)
     {
         // this for whatever reason gets called multiple times even when joining on SP
         // so we allow to pass multiple times gating it only on existing server ref

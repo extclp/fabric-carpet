@@ -80,7 +80,6 @@
     "HopperBlockEntity_counterMixin",
     "AbstractContainerMenu_ctrlQCraftingMixin",
     "Connection_packetCounterMixin",
-    "AbstractCauldronBlock_stackableSBoxesMixin",
     "ItemStack_stackableShulkerBoxesMixin",
     "TntBlock_noUpdateMixin",
     "Explosion_optimizedTntMixin",
@@ -96,7 +95,7 @@
     "PistonBaseBlock_qcMixin",
     "DispenserBlock_qcMixin",
 
-    "PickaxeItem_missingToolsMixin",
+    "Item_missingToolsMixin",
     "WitherBoss_moreBlueMixin",
     "ReloadCommand_reloadAppsMixin",
 
